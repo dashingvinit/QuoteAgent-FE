@@ -12,7 +12,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Axios } from '@/services';
-import MarkdownView from './markdown-view';
 import { Textarea } from '@/components/ui/textarea';
 
 interface Message {
@@ -32,9 +31,12 @@ const ChatLayout = () => {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (input: string) => {
-      const { data } = await Axios.post<QuoteResponse>('/inbound/67642c3b315fd62aa89b9aff', {
-        input,
-      });
+      const { data } = await Axios.post<QuoteResponse>(
+        '/inbound/67642c3b315fd62aa89b9aff',
+        {
+          input,
+        }
+      );
       return data?.data;
     },
     onSuccess: (data) => {
@@ -75,12 +77,16 @@ const ChatLayout = () => {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+              className={`flex ${
+                msg.sender === 'user' ? 'justify-end' : 'justify-start'
+              }`}>
               <div
                 className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  msg.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                  msg.sender === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted'
                 }`}>
-                <MarkdownView>{msg.text}</MarkdownView>
+                <>{msg.text}</>
                 <div className="text-xs mt-1 opacity-70">
                   {new Date(msg.timestamp).toLocaleTimeString()}
                 </div>
@@ -91,7 +97,9 @@ const ChatLayout = () => {
       </ScrollArea>
 
       <div className="border-t">
-        <form onSubmit={handleSubmit} className="flex items-center space-x-2 p-4">
+        <form
+          onSubmit={handleSubmit}
+          className="flex items-center space-x-2 p-4">
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon" type="button">

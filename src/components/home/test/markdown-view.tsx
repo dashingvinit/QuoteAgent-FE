@@ -1,20 +1,13 @@
-import { useState } from 'react';
-import { Copy } from 'lucide-react';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-function MarkdownView({ children, size = 'default' }) {
-  const [copy, setCopy] = useState('Copy');
+interface MarkdownViewProps {
+  children: string;
+  size?: 'default' | 'large';
+}
 
-  const handleCopy = (text) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopy('Copied!');
-      setTimeout(() => setCopy('Copy'), 1500);
-    });
-  };
-
+const MarkdownView: React.FC<MarkdownViewProps> = ({ children, size = 'default' }) => {
   const isLarge = size === 'large';
 
   return (
@@ -34,41 +27,7 @@ function MarkdownView({ children, size = 'default' }) {
           <h2 className="my-2 font-semibold text-lg md:text-xl lg:text-2xl" {...props} />
         ),
         h3: ({ ...props }) => <h3 className="my-1 font-medium text-md md:text-lg" {...props} />,
-        code: ({ inline, className, children, ...props }) => {
-          const match = /language-(\w+)/.exec(className || '');
-          const isCodeBlock = !inline && match;
 
-          if (isCodeBlock) {
-            const codeContent = String(children).replace(/\n$/, '');
-
-            return (
-              <div className="relative my-3 rounded-lg overflow-x-auto group">
-                <SyntaxHighlighter
-                  style={vscDarkPlus}
-                  language={match[1]}
-                  PreTag="div"
-                  className="rounded-lg text-xs sm:text-sm"
-                  {...props}>
-                  {codeContent}
-                </SyntaxHighlighter>
-                <button
-                  onClick={() => handleCopy(codeContent)}
-                  className="absolute top-2 right-2 bg-muted/40 p-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center gap-1">
-                  <Copy className="w-3 h-3" />
-                  {copy}
-                </button>
-              </div>
-            );
-          }
-
-          return (
-            <code
-              className="px-1.5 py-0.5 bg-gray-800 text-white rounded-md text-xs md:text-sm"
-              {...props}>
-              {children}
-            </code>
-          );
-        },
         ul: ({ ...props }) => (
           <ul className="pl-5 my-2 list-disc text-sm md:text-base" {...props} />
         ),
@@ -112,6 +71,6 @@ function MarkdownView({ children, size = 'default' }) {
       {children}
     </ReactMarkdown>
   );
-}
+};
 
 export default MarkdownView;

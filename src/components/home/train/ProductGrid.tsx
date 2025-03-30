@@ -543,16 +543,22 @@ export const ProductGrid = ({ data }) => {
     }
   }, []);
 
-  const onCellEdited = useCallback(([col, row]: Item, newValue: EditableGridCell) => {
-    const indexes: (keyof Product)[] = ['product_name', 'common_names', 'info', 'price'];
-    const key = indexes[col];
+  type MyGridCell = EditableGridCell | { kind: GridCellKind.Bubble; data: any }; // Replace 'any' with your actual data type
 
-    if (newValue.kind === GridCellKind.Bubble) {
-      const updatedData = [...data];
-      updatedData[row].tags = newValue.data;
-      setData(updatedData);
-    } else data[row][key] = newValue.data;
-  }, []);
+  const onCellEdited = useCallback(
+    ([col, row]: Item, newValue: MyGridCell) => {
+      const indexes: (keyof Product)[] = ['product_name', 'common_names', 'info', 'price'];
+      const key = indexes[col];
+
+      if (newValue.kind === GridCellKind.Bubble) {
+        const updatedData = [...data];
+        updatedData[row].tags = newValue.data;
+      } else {
+        data[row][key] = newValue.data;
+      }
+    },
+    [data]
+  );
 
   const onColumnResize = (col: GridColumn, newSize: number, index: number) => {
     const updated = [...columns];

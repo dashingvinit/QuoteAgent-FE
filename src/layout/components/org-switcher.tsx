@@ -1,0 +1,103 @@
+import * as React from 'react';
+import { ChevronsUpDown, Plus, GalleryVerticalEnd } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useOrg } from '@/context/org-provider';
+
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
+import { useQuery } from '@tanstack/react-query';
+import { Axios } from '@/services';
+
+interface Organization {
+  _id: string;
+  name: string;
+  about: string;
+  website: string;
+  email: string;
+  support_email: string;
+  contact: string;
+  preferred_currency: string;
+  createdAt: string;
+}
+
+interface ApiResponse {
+  data: {
+    data: Organization[];
+  };
+}
+
+const getOrg = async (): Promise<ApiResponse> => {
+  const response = await Axios.get('/org/');
+  return response.data;
+};
+
+export function OrgSwitcher() {
+  const { isMobile } = useSidebar();
+  const { activeOrg, setActiveOrg } = useOrg();
+  const { data, isLoading } = useQuery({ queryFn: getOrg, queryKey: ['orgs'] });
+
+  React.useEffect(() => {
+    if (data?.data?.data?.length > 0 && !activeOrg) {
+      setActiveOrg(data.data.data[0]);
+    }
+  }, [data, activeOrg, setActiveOrg]);
+
+  if (isLoading || !data || !activeOrg) {
+    return null;
+  }
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <GalleryVerticalEnd className="size-4" />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">{activeOrg.name}</span>
+                <span className="truncate text-xs">{activeOrg.email}</span>
+              </div>
+              <ChevronsUpDown className="ml-auto" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            align="start"
+            side={isMobile ? 'bottom' : 'right'}
+            sideOffset={4}>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Teams</DropdownMenuLabel>
+            {data.data.data.map((org, index) => {
+              return (
+                <DropdownMenuItem key={org._id} onClick={() => setActiveOrg(org)} className="gap-2 p-2">
+                  <div className="flex size-6 items-center justify-center rounded-sm border">
+                    <GalleryVerticalEnd className="size-4 shrink-0" />
+                  </div>
+                  {org.name}
+                  <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              );
+            })}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="gap-2 p-2">
+              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                <Plus className="size-4" />
+              </div>
+              <div className="font-medium text-muted-foreground">Add team</div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}

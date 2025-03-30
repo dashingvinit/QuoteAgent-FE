@@ -1,7 +1,8 @@
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { OrgProvider } from './context/org-provider';
 
-import Layout from './layout/Layout';
+import Layout from './layout';
 import Pages from './pages/_pages';
 // import Landing from './pages/Landing';
 
@@ -9,7 +10,7 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
-    <div className="App">
+    <OrgProvider>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Layout>
@@ -17,7 +18,7 @@ function App() {
           </Layout>
         </BrowserRouter>
       </QueryClientProvider>
-    </div>
+    </OrgProvider>
   );
 }
 

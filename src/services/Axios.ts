@@ -1,10 +1,11 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import axiosRetry from 'axios-retry';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 // Create an Axios instance with custom configuration
 const Axios: AxiosInstance = axios.create({
-  baseURL: 'https://quiz-backend-zel6.onrender.com/api/v1/', // main server
-  //baseURL: 'http://localhost:2710/api/v1/', // local server
+  baseURL: apiUrl,
   timeout: 30000, // 30 seconds timeout, adjust as needed
 });
 

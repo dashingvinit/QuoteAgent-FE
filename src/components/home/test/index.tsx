@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Axios } from '@/services';
+import Markdown from './markdown-view';
 import { Textarea } from '@/components/ui/textarea';
 
 interface Message {
@@ -86,7 +87,7 @@ const ChatLayout = () => {
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted'
                 }`}>
-                <>{msg.text}</>
+                <Markdown>{msg.text}</Markdown>
                 <div className="text-xs mt-1 opacity-70">
                   {new Date(msg.timestamp).toLocaleTimeString()}
                 </div>

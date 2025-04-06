@@ -67,20 +67,19 @@ export const ProductGrid = ({ data, setProducts }) => {
     [data]
   );
 
-  type MyGridCell =
-    | { kind: GridCellKind.Text; data: string }
-    | { kind: GridCellKind.Custom; data: { values: string[] } };
   const onCellEdited = useCallback(
-    ([col, row]: Item, newValue: MyGridCell) => {
+    (cell: Item, newValue: EditableGridCell) => {
+      const [col, row] = cell;
       const indexes: (keyof Product)[] = ['product_name', 'common_names', 'info', 'price'];
       const key = indexes[col];
 
-      if (newValue.kind == GridCellKind.Custom) {
+      if (newValue.kind === GridCellKind.Custom) {
+        const customData = newValue.data as { values: string[] };
         if (!data[row][key]) {
           data[row][key] = [];
         }
-        data[row][key] = newValue.data.values;
-      } else {
+        data[row][key] = customData.values;
+      } else if (newValue.kind === GridCellKind.Text) {
         data[row][key] = newValue.data;
       }
     },

@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ export default function InputArea({ setProducts }) {
   const [file, setFile] = useState<File | null>(null);
   const [contextKey, setContextKey] = useState<string>('');
   const [contextValue, setContextValue] = useState<string>('');
+  const [open, setOpen] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
 
   const uploadSheet = async (file: File): Promise<void> => {
@@ -27,7 +29,6 @@ export default function InputArea({ setProducts }) {
       const formData = new FormData();
       formData.append('files', file);
       const { data } = await Axios.post(`/org/upload/${activeOrg._id}`, formData);
-      console.log(data.data);
       setProducts(data.data);
     } catch (error) {
       console.log(error);
@@ -48,6 +49,7 @@ export default function InputArea({ setProducts }) {
       setIsUploading(true);
       await uploadSheet(file);
       setFile(null);
+      setOpen(false);
     } catch (error) {
       console.log(error);
     } finally {
@@ -62,7 +64,7 @@ export default function InputArea({ setProducts }) {
   return (
     <Card className="m-2 bg-muted/40 py-2">
       <CardContent className="text-muted-foreground text-sm">
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <div className="flex items-center space-x-1 cursor-pointer hover:bg-muted/20 p-2 rounded-md">
               <Button variant="ghost" size="icon">
@@ -99,7 +101,7 @@ export default function InputArea({ setProducts }) {
           </DialogContent>
         </Dialog>
 
-        <div className="space-y-1 border border-dashed rounded-lg p-2">
+        {/* <div className="space-y-1 border border-dashed rounded-lg p-2">
           <div className="flex items-center space-x-1">
             <Button variant="ghost" size="icon">
               <MessageSquare className="h-5 w-5" />
@@ -125,7 +127,7 @@ export default function InputArea({ setProducts }) {
               <Send className="h-5 w-5 mr-2" /> Send
             </Button>
           </div>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );

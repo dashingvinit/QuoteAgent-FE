@@ -1,19 +1,14 @@
+import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Paperclip, Send } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Paperclip, Send, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useState } from 'react';
+import { Textarea } from '@/components/ui/textarea';
 import { useMutation } from '@tanstack/react-query';
 import { Axios } from '@/services';
 import Markdown from './markdown-view';
-import { Textarea } from '@/components/ui/textarea';
+import { useOrg } from '@/context/org-provider';
 
 interface Message {
   id: number;
@@ -27,17 +22,19 @@ interface QuoteResponse {
 }
 
 const ChatLayout = () => {
+  const { activeOrg } = useOrg();
   const [message, setMessage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (input: string) => {
-      const { data } = await Axios.post<QuoteResponse>(
-        '/inbound/67642c3b315fd62aa89b9aff',
-        {
-          input,
-        }
-      );
+      setIsLoading(true);
+      const { data } = await Axios.post<QuoteResponse>(`/inbound/${activeOrg._id}`, {
+        input,
+      });
       return data?.data;
     },
     onSuccess: (data) => {
@@ -48,9 +45,11 @@ const ChatLayout = () => {
         timestamp: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, botMessage]);
+      setIsLoading(false);
     },
     onError: (error) => {
       console.error('Failed to send message:', error);
+      setIsLoading(false);
     },
   });
 
@@ -71,36 +70,42 @@ const ChatLayout = () => {
     setMessage('');
   };
 
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isLoading]);
+
   return (
     <div className="flex flex-col h-full">
-      <ScrollArea className="flex-grow">
+      <ScrollArea className="flex-grow overflow-y-auto">
+        <h2 className="text-center">Test here</h2>
         <div className="p-4 space-y-4">
           {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${
-                msg.sender === 'user' ? 'justify-end' : 'justify-start'
-              }`}>
+            <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
                 className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  msg.sender === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
+                  msg.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
                 }`}>
                 <Markdown>{msg.text}</Markdown>
-                <div className="text-xs mt-1 opacity-70">
-                  {new Date(msg.timestamp).toLocaleTimeString()}
-                </div>
+                <div className="text-xs mt-1 opacity-70">{new Date(msg.timestamp).toLocaleTimeString()}</div>
               </div>
             </div>
           ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
+                <Loader2 className="animate-spin h-4 w-4" />
+                <div className="text-xs mt-1 opacity-70">{new Date().toLocaleTimeString()}</div>
+              </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
         </div>
       </ScrollArea>
 
       <div className="border-t">
-        <form
-          onSubmit={handleSubmit}
-          className="flex items-center space-x-2 p-4">
+        <form onSubmit={handleSubmit} className="flex items-center space-x-2 p-4">
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon" type="button">

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronsUpDown, Plus, GalleryVerticalEnd } from 'lucide-react';
 import {
   DropdownMenu,
@@ -9,8 +9,9 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useOrg } from '@/context/org-provider';
-
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { useQuery } from '@tanstack/react-query';
 import { Axios } from '@/services';
@@ -41,9 +42,12 @@ const getOrg = async (): Promise<ApiResponse> => {
 export function OrgSwitcher() {
   const { isMobile } = useSidebar();
   const { activeOrg, setActiveOrg } = useOrg();
+  const [showForm, setShowForm] = useState(false);
+  const [newOrg, setNewOrg] = useState({ name: '', email: '' });
+
   const { data, isLoading } = useQuery({ queryFn: getOrg, queryKey: ['orgs'] });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (data?.data?.data?.length > 0 && !activeOrg) {
       setActiveOrg(data.data.data[0]);
     }
@@ -52,6 +56,18 @@ export function OrgSwitcher() {
   if (isLoading || !data || !activeOrg) {
     return null;
   }
+
+  const handleCreate = async () => {
+    if (!newOrg.name || !newOrg.email) return;
+    try {
+      const { data } = await Axios.post('/org/create', { data: newOrg });
+      setActiveOrg(data.data);
+      setShowForm(false);
+      setNewOrg({ name: '', email: '' });
+    } catch (error) {
+      console.log('Error occured in org creation', error);
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -79,7 +95,10 @@ export function OrgSwitcher() {
             <DropdownMenuLabel className="text-xs text-muted-foreground">Teams</DropdownMenuLabel>
             {data.data.data.map((org, index) => {
               return (
-                <DropdownMenuItem key={org._id} onClick={() => setActiveOrg(org)} className="gap-2 p-2">
+                <DropdownMenuItem
+                  key={org._id}
+                  onClick={() => setActiveOrg(org)}
+                  className={`gap-2 p-2 ${activeOrg._id === org._id && 'bg-accent'}`}>
                   <div className="flex size-6 items-center justify-center rounded-sm border">
                     <GalleryVerticalEnd className="size-4 shrink-0" />
                   </div>
@@ -89,12 +108,40 @@ export function OrgSwitcher() {
               );
             })}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                <Plus className="size-4" />
+            {!showForm ? (
+              <div
+                className="flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-muted"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowForm(true);
+                }}>
+                <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                  <Plus className="size-4" />
+                </div>
+                <h2 className="font-medium text-sm text-muted-foreground">Add org</h2>
               </div>
-              <div className="font-medium text-muted-foreground">Add team</div>
-            </DropdownMenuItem>
+            ) : (
+              <div className="p-2 space-y-2">
+                <Input
+                  placeholder="Team name"
+                  value={newOrg.name}
+                  onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
+                />
+                <Input
+                  placeholder="Team email"
+                  value={newOrg.email}
+                  onChange={(e) => setNewOrg({ ...newOrg, email: e.target.value })}
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleCreate}>
+                    Submit
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowForm(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

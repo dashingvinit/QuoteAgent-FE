@@ -1,7 +1,6 @@
 import { Calendar, Home, Inbox, Settings } from 'lucide-react';
-import Header from './Header';
+import { OrgSwitcher } from './org-switcher';
 import Footer from './Footer';
-
 import {
   Sidebar,
   SidebarContent,
@@ -45,7 +44,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="h-full flex flex-col">
       {/* Sidebar Header */}
       <SidebarHeader>
-        <Header />
+        <OrgSwitcher />
       </SidebarHeader>
 
       {/* Sidebar Content */}

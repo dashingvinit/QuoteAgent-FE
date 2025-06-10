@@ -2,22 +2,38 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogDescription,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Paperclip, MessageSquare, Send, X } from 'lucide-react';
-import { useTraining } from '../../../context/useTraning.tsx';
+import { useOrg } from '../../../context/org-provider.tsx';
 import { useState } from 'react';
+import { Axios } from '@/services';
 
-export default function InputArea() {
-  const { updateContext, uploadSheet } = useTraining();
+export default function InputArea({ setProducts }) {
+  const { activeOrg } = useOrg();
   const [file, setFile] = useState<File | null>(null);
   const [contextKey, setContextKey] = useState<string>('');
   const [contextValue, setContextValue] = useState<string>('');
+  const [open, setOpen] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+
+  const uploadSheet = async (file: File): Promise<void> => {
+    try {
+      console.log(file);
+      const formData = new FormData();
+      formData.append('files', file);
+      const { data } = await Axios.post(`/org/upload/${activeOrg._id}`, formData);
+      setProducts(data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -33,23 +49,11 @@ export default function InputArea() {
       setIsUploading(true);
       await uploadSheet(file);
       setFile(null);
+      setOpen(false);
     } catch (error) {
       console.log(error);
     } finally {
       setIsUploading(false);
-    }
-  };
-
-  const handleContextSubmit = async () => {
-    if (!contextKey.trim() || !contextValue.trim()) {
-      return;
-    }
-    try {
-      await updateContext(contextKey.trim(), contextValue.trim());
-      setContextKey('');
-      setContextValue('');
-    } catch (error) {
-      console.log(error);
     }
   };
 
@@ -60,7 +64,7 @@ export default function InputArea() {
   return (
     <Card className="m-2 bg-muted/40 py-2">
       <CardContent className="text-muted-foreground text-sm">
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <div className="flex items-center space-x-1 cursor-pointer hover:bg-muted/20 p-2 rounded-md">
               <Button variant="ghost" size="icon">
@@ -73,6 +77,9 @@ export default function InputArea() {
             <DialogHeader>
               <DialogTitle>Upload Spreadsheet</DialogTitle>
             </DialogHeader>
+            <DialogDescription>
+              Select a file to upload. Make sure the text is extractable and not an image.
+            </DialogDescription>
             <div className="flex flex-col space-y-4">
               {file ? (
                 <div className="flex items-center justify-between bg-muted p-2 rounded-md">
@@ -94,7 +101,7 @@ export default function InputArea() {
           </DialogContent>
         </Dialog>
 
-        <div className="space-y-1 border border-dashed rounded-lg p-2">
+        {/* <div className="space-y-1 border border-dashed rounded-lg p-2">
           <div className="flex items-center space-x-1">
             <Button variant="ghost" size="icon">
               <MessageSquare className="h-5 w-5" />
@@ -115,13 +122,12 @@ export default function InputArea() {
               className="flex-1"
             />
             <Button
-              onClick={handleContextSubmit}
               className="bg-teal-600 hover:bg-teal-700 dark:bg-teal-500 dark:hover:bg-teal-600"
               disabled={!contextKey.trim() || !contextValue.trim()}>
               <Send className="h-5 w-5 mr-2" /> Send
             </Button>
           </div>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );

@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Settings } from 'lucide-react';
+import { Calendar, Home, Cpu, FlaskConical, Inbox, Settings, Building } from 'lucide-react';
 import { OrgSwitcher } from './org-switcher';
 import Footer from './Footer';
 import {
@@ -17,26 +17,41 @@ import { Link } from 'react-router-dom';
 
 // Menu items.
 const items = [
+  // {
+  //   title: 'Dashboard',
+  //   url: '/',
+  //   icon: Home,
+  // },
   {
-    title: 'Home',
-    url: '/',
-    icon: Home,
+    title: 'Ontology',
+    url: '/ontology-builder',
+    icon: Building,
   },
   {
-    title: 'History',
-    url: 'history',
-    icon: Calendar,
+    title: 'Component',
+    url: '/train',
+    icon: Cpu,
   },
   {
-    title: 'Inbox',
-    url: 'inbox',
-    icon: Inbox,
+    title: 'Generate Quote',
+    url: '/test',
+    icon: FlaskConical,
   },
-  {
-    title: 'Settings',
-    url: 'settings',
-    icon: Settings,
-  },
+  // {
+  //   title: 'History',
+  //   url: 'history',
+  //   icon: Calendar,
+  // },
+  // {
+  //   title: 'Inbox',
+  //   url: 'inbox',
+  //   icon: Inbox,
+  // },
+  // {
+  //   title: 'Settings',
+  //   url: 'settings',
+  //   icon: Settings,
+  // },
 ];
 
 export function AppSidebar() {

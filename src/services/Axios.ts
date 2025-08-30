@@ -5,7 +5,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 const Axios: AxiosInstance = axios.create({
   baseURL: apiUrl,
-  timeout: 60000,
+  timeout: 1200000,
 });
 
 axiosRetry(Axios, {

@@ -1,0 +1,66 @@
+import { memo } from 'react';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { InputArea, ProductGrid, ChatDisplay } from '@/features/PriceSheetChat/components';
+import { useChat } from '@/features/PriceSheetChat/hooks/useChat';
+import { useOrg } from '@/context/org-provider';
+import { useGetOntology } from '@/features/Ontology/hooks';
+
+const ChatLayout = () => {
+  const { activeOrg } = useOrg();
+  const { data: ontology } = useGetOntology(activeOrg?._id);
+  const {
+    message,
+    setMessage,
+    schema,
+    setSchema,
+    file,
+    products,
+    setProducts,
+    isUploading,
+    chatMessages,
+    fileInputRef,
+    handleSendMessage,
+    handleFileSelect,
+    handleFileChange,
+  } = useChat();
+
+  return (
+    <div className="flex h-full overflow-hidden">
+      <ResizablePanelGroup direction="horizontal">
+        <ResizablePanel>
+          <div className="flex flex-col h-full">
+            <ScrollArea className="px-2 space-y-2 h-full">
+              <ChatDisplay messages={chatMessages} />
+            </ScrollArea>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.xlsx,.xls,.json"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
+
+            <InputArea
+              message={message}
+              setMessage={setMessage}
+              file={file}
+              isUploading={isUploading}
+              onFileSelect={handleFileSelect}
+              onSendMessage={handleSendMessage}
+              setSchema={setSchema}
+              components={ontology?.components}
+            />
+          </div>
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel>
+          <ProductGrid schema={schema} data={products} setProducts={setProducts} />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
+  );
+};
+
+export default memo(ChatLayout);

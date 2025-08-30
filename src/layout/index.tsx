@@ -7,14 +7,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="antialiased flex h-screen">
       <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={true}>
           <div className="grid grid-cols-[auto,1fr] w-full">
             <AppSidebar />
-            <main className="flex flex-col h-screen overflow-auto">
-              <div>
+            <main className="flex flex-col h-screen">
+              <header className="sticky top-0 z-10">
                 <Topbar />
-              </div>
-              {children}
+              </header>
+              <div className="flex-1 overflow-auto">{children}</div>
             </main>
           </div>
         </SidebarProvider>

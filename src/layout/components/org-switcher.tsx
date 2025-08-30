@@ -35,7 +35,7 @@ interface ApiResponse {
 }
 
 const getOrg = async (): Promise<ApiResponse> => {
-  const response = await Axios.get('/org/');
+  const response = await Axios.get('/organizations/');
   return response.data;
 };
 
@@ -45,7 +45,7 @@ export function OrgSwitcher() {
   const [showForm, setShowForm] = useState(false);
   const [newOrg, setNewOrg] = useState({ name: '', email: '' });
 
-  const { data, isLoading } = useQuery({ queryFn: getOrg, queryKey: ['orgs'] });
+  const { data } = useQuery({ queryFn: getOrg, queryKey: ['orgs'] });
 
   useEffect(() => {
     if (data?.data?.data?.length > 0 && !activeOrg) {
@@ -53,14 +53,10 @@ export function OrgSwitcher() {
     }
   }, [data, activeOrg, setActiveOrg]);
 
-  if (isLoading || !data || !activeOrg) {
-    return null;
-  }
-
   const handleCreate = async () => {
     if (!newOrg.name || !newOrg.email) return;
     try {
-      const { data } = await Axios.post('/org/create', { data: newOrg });
+      const { data } = await Axios.post('/organizations/create', { data: newOrg });
       setActiveOrg(data.data);
       setShowForm(false);
       setNewOrg({ name: '', email: '' });
@@ -81,8 +77,8 @@ export function OrgSwitcher() {
                 <GalleryVerticalEnd className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{activeOrg.name}</span>
-                <span className="truncate text-xs">{activeOrg.email}</span>
+                <span className="truncate font-semibold">{activeOrg?.name}</span>
+                <span className="truncate text-xs">{activeOrg?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -93,12 +89,12 @@ export function OrgSwitcher() {
             side={isMobile ? 'bottom' : 'right'}
             sideOffset={4}>
             <DropdownMenuLabel className="text-xs text-muted-foreground">Teams</DropdownMenuLabel>
-            {data.data.data.map((org, index) => {
+            {data?.data?.data?.map((org, index) => {
               return (
                 <DropdownMenuItem
                   key={org._id}
                   onClick={() => setActiveOrg(org)}
-                  className={`gap-2 p-2 ${activeOrg._id === org._id && 'bg-accent'}`}>
+                  className={`gap-2 p-2 ${activeOrg?._id === org._id && 'bg-accent'}`}>
                   <div className="flex size-6 items-center justify-center rounded-sm border">
                     <GalleryVerticalEnd className="size-4 shrink-0" />
                   </div>
@@ -123,12 +119,12 @@ export function OrgSwitcher() {
             ) : (
               <div className="p-2 space-y-2">
                 <Input
-                  placeholder="Team name"
+                  placeholder="Org name"
                   value={newOrg.name}
                   onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
                 />
                 <Input
-                  placeholder="Team email"
+                  placeholder="Org email"
                   value={newOrg.email}
                   onChange={(e) => setNewOrg({ ...newOrg, email: e.target.value })}
                 />

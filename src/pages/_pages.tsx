@@ -4,7 +4,9 @@ import Landing from './Landing';
 import Dashboard from './Dashboard';
 
 import OntologyBuilderPage from './OntologyBuilder';
+
 import PriceSheetChatPage from './PriceSheetChatPage';
+import BrowseAllComponents from './BrowseAllComponents';
 
 import Test from './Test/index';
 
@@ -13,12 +15,17 @@ import NotFound from './NotFound';
 function pages() {
   return (
     <Routes>
+      <Route path="/landing" element={<Landing />} />
+
       <Route index path="/" element={<Dashboard />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/ontology-builder" element={<OntologyBuilderPage />} />
-      <Route path="/test" element={<Test />} />
-      <Route path="/train" element={<PriceSheetChatPage />} />
-      <Route path="/landing" element={<Landing />} />
+      <Route path="/ontology" element={<OntologyBuilderPage />} />
+
+      <Route path="/components" element={<BrowseAllComponents />} />
+      <Route path="/components/upload" element={<PriceSheetChatPage />} />
+
+      <Route path="/quotes/generate" element={<Test />} />
+
       <Route index path="/*" element={<NotFound />} />
     </Routes>
   );

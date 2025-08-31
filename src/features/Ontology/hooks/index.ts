@@ -9,6 +9,15 @@ import type {
   RelationshipType,
 } from '../types';
 
+interface UpdateComponentTypeVars {
+  componentTypeId: string;
+  updates: {
+    name?: string;
+    description?: string;
+    attributes?: Attribute[];
+  };
+}
+
 const ontologyQueryKey = (organizationId: string) => ['ontology', organizationId];
 
 export const useGetOntology = (organizationId: string) => {
@@ -28,15 +37,6 @@ export const useAddComponentType = (organizationId: string) => {
     },
   });
 };
-
-interface UpdateComponentTypeVars {
-  componentTypeId: string;
-  updates: {
-    name?: string;
-    description?: string;
-    attributes?: Attribute[];
-  };
-}
 
 export const useUpdateComponentType = (organizationId: string) => {
   const queryClient = useQueryClient();

@@ -4,7 +4,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 
 const Topbar = () => {
   return (
-    <div className="flex items-center justify-between border-b p-1 shadow-sm">
+    <div className="flex items-center justify-between border-b p-1 shadow-sm bg-background">
       <div className="flex items-center gap-2">
         <div>
           <SidebarTrigger />

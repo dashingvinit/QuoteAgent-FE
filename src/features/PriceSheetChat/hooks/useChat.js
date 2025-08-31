@@ -26,7 +26,7 @@ export const useChat = () => {
 
     const userMsg = { id: `user-${Date.now()}`, content: message, type: 'HumanMessage' };
     setChatMessages((prev) => [...prev, userMsg]);
-    
+
     // Store the message and file before clearing state
     const currentMessage = message;
     const currentFile = file;
@@ -50,7 +50,7 @@ export const useChat = () => {
       console.error('Failed to send message:', error);
       const errorMsg = {
         id: `error-${Date.now()}`,
-        content: `An error occurred. ${error.message}.`,
+        content: error.message || 'An error occurred.',
         type: 'AIMessage',
       };
       setChatMessages((prev) => [...prev.filter((m) => m.id !== userMsg.id), errorMsg]);

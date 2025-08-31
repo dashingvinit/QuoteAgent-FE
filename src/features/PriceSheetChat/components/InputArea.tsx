@@ -4,40 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Paperclip, Send, RotateCcw, FileText, Loader2, Settings, Zap, Copy, Archive } from 'lucide-react';
-
-interface SchemaField {
-  fieldId: string;
-  fieldLabel: string;
-  fieldType: string;
-}
-
-interface ComponentSchema {
-  componentName: string;
-  componentId: string;
-  fields: SchemaField[];
-}
-
-interface Component {
-  _id: string;
-  name: string;
-  orgId: string;
-  attributes: any[];
-  displayName?: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
-interface InputAreaProps {
-  message: string;
-  setMessage: (message: string) => void;
-  file: File | null;
-  isUploading: boolean;
-  onFileSelect: () => void;
-  onSendMessage: () => void;
-  setSchema: (schema: ComponentSchema | null) => void;
-  components: [];
-}
+import type { ComponentType, InputAreaProps } from '../types';
 
 export default function InputArea({
   message,
@@ -46,55 +13,20 @@ export default function InputArea({
   isUploading,
   onFileSelect,
   onSendMessage,
-  setSchema,
-  components,
+  setSelectedComponent,
+  componentTypes,
 }: InputAreaProps) {
-  const [selectedComponentId, setSelectedComponentId] = useState<string>('');
+  const [selectedComponentTypeId, setSelectedComponentTypeId] = useState<string>('');
 
-  // Function to convert component attributes to schema format
-  const convertComponentToSchema = (component: Component): ComponentSchema => {
-    // Convert attributes to schema fields
-    const fields: SchemaField[] = component?.attributes.map((attr: any) => ({
-      fieldId: attr.id || attr.name || `field_${Date.now()}`,
-      fieldLabel: attr.label || attr.displayName || attr.name || 'Unnamed Field',
-      fieldType: attr.type || attr.dataType || 'string',
-    }));
+  // Handle component type selection
+  const handleComponentTypeSelect = (componentTypeId: string) => {
+    setSelectedComponentTypeId(componentTypeId);
 
-    // If no attributes exist, create a basic schema structure
-    if (fields.length === 0) {
-      fields.push(
-        {
-          fieldId: 'id',
-          fieldLabel: 'ID',
-          fieldType: 'string',
-        },
-        {
-          fieldId: 'name',
-          fieldLabel: 'Name',
-          fieldType: 'string',
-        }
-      );
-    }
-
-    return {
-      componentName: component.name,
-      componentId: component._id,
-      fields: fields,
-    };
-  };
-
-  // Handle component selection
-  const handleComponentSelect = (componentId: string) => {
-    setSelectedComponentId(componentId);
-
-    if (componentId && components) {
-      const selectedComponent = components.find((comp: Component) => comp._id === componentId);
-      if (selectedComponent) {
-        const schema = convertComponentToSchema(selectedComponent);
-        setSchema(schema.fields);
-      }
+    if (componentTypeId && componentTypes) {
+      const selectedComponentType = componentTypes.find((comp: ComponentType) => comp._id === componentTypeId);
+      setSelectedComponent(selectedComponentType || null);
     } else {
-      setSchema(null);
+      setSelectedComponent(null);
     }
   };
 
@@ -126,20 +58,20 @@ export default function InputArea({
           {/* Component Selection and Controls */}
           <div className="flex gap-3 items-center">
             <div className="flex-1">
-              <Select value={selectedComponentId} onValueChange={handleComponentSelect}>
+              <Select value={selectedComponentTypeId} onValueChange={handleComponentTypeSelect}>
                 <SelectTrigger className="w-full bg-background/60 border-border/70 focus:bg-background">
-                  <SelectValue placeholder="Select a component" />
+                  <SelectValue placeholder="Select a component type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {components && components.length > 0 ? (
-                    components.map((comp: Component) => (
+                  {componentTypes && componentTypes.length > 0 ? (
+                    componentTypes.map((comp: ComponentType) => (
                       <SelectItem key={comp._id} value={comp._id}>
                         {comp.displayName || comp.name}
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="no-components" disabled>
-                      No components available
+                    <SelectItem value="no-component-types" disabled>
+                      No component types available
                     </SelectItem>
                   )}
                 </SelectContent>
@@ -206,8 +138,8 @@ export default function InputArea({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setSelectedComponentId('');
-                  setSchema(null);
+                  setSelectedComponentTypeId('');
+                  setSelectedComponent(null);
                   setMessage('');
                 }}
                 className="bg-background/60 hover:bg-background/80 border-border/70">

@@ -12,8 +12,8 @@ const ChatLayout = () => {
   const {
     message,
     setMessage,
+    setSelectedComponentType,
     schema,
-    setSchema,
     file,
     products,
     setProducts,
@@ -52,8 +52,8 @@ const ChatLayout = () => {
                 isUploading={isUploading}
                 onFileSelect={handleFileSelect}
                 onSendMessage={handleSendMessage}
-                setSchema={setSchema}
-                components={ontology?.components}
+                setSelectedComponent={setSelectedComponentType}
+                componentTypes={ontology?.components}
               />
             </div>
           </div>

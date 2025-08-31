@@ -2,31 +2,11 @@ import { useEffect, useRef, memo } from 'react';
 import { Wrench, MessageSquare, User, Bot } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import MarkdownView from '@/components/global/markdown-view';
+import type { DisplayMessage, ToolCallContent, ChatDisplayProps } from '../types';
 
-// The interface remains the same
-export interface DisplayMessage {
-  id: string;
-  content: string | any[];
-  type: 'HumanMessage' | 'AIMessage' | 'ToolMessage';
-  tool_calls?: any[];
-  kwargs?: any;
-}
+// Re-export for backward compatibility
+export type { DisplayMessage };
 
-interface ChatDisplayProps {
-  messages: DisplayMessage[];
-}
-
-const getAlignment = (type: DisplayMessage['type']) => {
-  switch (type) {
-    case 'HumanMessage':
-      return 'justify-end';
-    case 'ToolMessage':
-      return 'justify-center';
-    case 'AIMessage':
-    default:
-      return 'justify-start';
-  }
-};
 
 const getMessageStyles = (type: DisplayMessage['type']) => {
   switch (type) {
@@ -63,14 +43,14 @@ const ChatDisplay = ({ messages }: ChatDisplayProps) => {
   };
 
   // Helper function to safely stringify objects
-  const safeStringify = (obj: any): string => {
+  const safeStringify = (obj: unknown): string => {
     try {
       if (typeof obj === 'string') return obj;
       if (typeof obj === 'object' && obj !== null) {
         return JSON.stringify(obj, null, 2);
       }
       return String(obj);
-    } catch (error) {
+    } catch {
       return '[Unable to display content]';
     }
   };
@@ -118,7 +98,7 @@ const ChatDisplay = ({ messages }: ChatDisplayProps) => {
     const styles = getMessageStyles(msg.type);
 
     switch (msg.type) {
-      case 'HumanMessage':
+      case 'HumanMessage': {
         const humanContent = msg.kwargs?.content || msg.content;
         return (
           <div className="w-full flex justify-end">
@@ -130,8 +110,9 @@ const ChatDisplay = ({ messages }: ChatDisplayProps) => {
             </div>
           </div>
         );
+      }
 
-      case 'AIMessage':
+      case 'AIMessage': {
         // Handle AI message with tool calls
         if (msg.tool_calls && msg.tool_calls.length > 0) {
           return (
@@ -169,7 +150,8 @@ const ChatDisplay = ({ messages }: ChatDisplayProps) => {
         }
 
         // Handle AI message that is in array format with function calls
-        if (Array.isArray(msg.content) && msg.content[0]?.functionCall?.name) {
+        if (Array.isArray(msg.content) && msg.content.length > 0 && typeof msg.content[0] === 'object' && msg.content[0] !== null && 'functionCall' in msg.content[0] && msg.content[0].functionCall?.name) {
+          const toolCallContent = msg.content as ToolCallContent[];
           return (
             <div className="w-full flex justify-start">
               <div className="flex items-start gap-3 max-w-full">
@@ -179,7 +161,7 @@ const ChatDisplay = ({ messages }: ChatDisplayProps) => {
                     <span className="text-sm font-medium text-muted-foreground">AI Assistant</span>
                   </div>
                   <div className="space-y-2">
-                    {msg.content.map((item, index) => (
+                    {toolCallContent.map((item, index) => (
                       <div key={index} className="bg-muted/40 rounded-lg p-3 sm:p-4 border-l-4 border-primary/60">
                         <div className="flex items-center gap-2 mb-2">
                           <Wrench className="text-primary flex-shrink-0" size={16} />
@@ -216,10 +198,11 @@ const ChatDisplay = ({ messages }: ChatDisplayProps) => {
             </div>
           </div>
         );
+      }
 
-      case 'ToolMessage':
+      case 'ToolMessage': {
         const toolContent = msg.kwargs?.content || msg.content;
-        let parsedContent;
+        let parsedContent: unknown;
 
         try {
           parsedContent = typeof toolContent === 'string' ? JSON.parse(toolContent) : toolContent;
@@ -237,27 +220,27 @@ const ChatDisplay = ({ messages }: ChatDisplayProps) => {
               className={`${styles.maxWidth} bg-amber-50/50 dark:bg-amber-950/20 rounded-lg p-3 sm:p-4 border-l-4 border-amber-400/60 dark:border-amber-500/40 w-full`}>
               {typeof parsedContent === 'object' && parsedContent !== null ? (
                 <div className="space-y-3">
-                  {parsedContent.summary && (
+                  {(parsedContent as Record<string, unknown>).summary && (
                     <div className="text-sm">
                       <span className="font-medium text-amber-800 dark:text-amber-200">Summary:</span>
-                      <span className="ml-2 text-foreground break-words">{parsedContent.summary}</span>
+                      <span className="ml-2 text-foreground break-words">{String((parsedContent as Record<string, unknown>).summary)}</span>
                     </div>
                   )}
-                  {parsedContent.success !== undefined && (
+                  {(parsedContent as Record<string, unknown>).success !== undefined && (
                     <div className="text-sm">
                       <span className="font-medium text-amber-800 dark:text-amber-200">Status:</span>
                       <span
                         className={`ml-2 ${
-                          parsedContent.success ? 'text-green-600 dark:text-green-400' : 'text-destructive'
+                          (parsedContent as Record<string, unknown>).success ? 'text-green-600 dark:text-green-400' : 'text-destructive'
                         }`}>
-                        {parsedContent.success ? 'Success' : 'Failed'}
+                        {(parsedContent as Record<string, unknown>).success ? 'Success' : 'Failed'}
                       </span>
                     </div>
                   )}
-                  {parsedContent.message && (
+                  {(parsedContent as Record<string, unknown>).message && (
                     <div className="text-sm">
                       <span className="font-medium text-amber-800 dark:text-amber-200">Message:</span>
-                      <span className="ml-2 text-foreground break-words">{parsedContent.message}</span>
+                      <span className="ml-2 text-foreground break-words">{String((parsedContent as Record<string, unknown>).message)}</span>
                     </div>
                   )}
                   <details className="text-xs">
@@ -277,6 +260,7 @@ const ChatDisplay = ({ messages }: ChatDisplayProps) => {
             </div>
           </div>
         );
+      }
 
       default:
         return (

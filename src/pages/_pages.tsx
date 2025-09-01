@@ -7,6 +7,7 @@ import OntologyBuilderPage from './OntologyBuilder';
 
 import PriceSheetChatPage from './PriceSheetChatPage';
 import BrowseAllComponents from './BrowseAllComponents';
+import UpdateVectors from './UpdateVectors';
 
 import Test from './Test/index';
 
@@ -23,6 +24,7 @@ function pages() {
 
       <Route path="/components" element={<BrowseAllComponents />} />
       <Route path="/components/upload" element={<PriceSheetChatPage />} />
+      <Route path="/components/relations" element={<UpdateVectors />} />
 
       <Route path="/quotes/generate" element={<Test />} />
 

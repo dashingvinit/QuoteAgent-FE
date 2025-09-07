@@ -30,7 +30,8 @@ export function NavGrouped({ items }) {
               <Collapsible
                 key={item.title}
                 asChild
-                defaultOpen={hasActiveSubItem || item.isActive}
+                // defaultOpen={hasActiveSubItem || item.isActive}
+                defaultOpen={true}
                 className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>

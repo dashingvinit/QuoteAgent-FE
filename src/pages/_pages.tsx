@@ -9,6 +9,7 @@ import PriceSheetChatPage from './PriceSheetChatPage';
 import BrowseAllComponents from './BrowseAllComponents';
 import UpdateVectors from './UpdateVectors';
 
+import OrganizationEditPage from './Organization';
 import Test from './Test/index';
 
 import NotFound from './NotFound';
@@ -27,6 +28,8 @@ function pages() {
       <Route path="/components/relations" element={<UpdateVectors />} />
 
       <Route path="/quotes/generate" element={<Test />} />
+
+      <Route path="/Settings" element={<OrganizationEditPage />} />
 
       <Route index path="/*" element={<NotFound />} />
     </Routes>

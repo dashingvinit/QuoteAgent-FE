@@ -56,7 +56,7 @@ export function OrgSwitcher() {
   const handleCreate = async () => {
     if (!newOrg.name || !newOrg.email) return;
     try {
-      const { data } = await Axios.post('/organizations/create', { data: newOrg });
+      const { data } = await Axios.post('/organizations', { data: newOrg });
       setActiveOrg(data.data);
       setShowForm(false);
       setNewOrg({ name: '', email: '' });

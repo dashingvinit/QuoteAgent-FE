@@ -8,7 +8,7 @@ import { NavPrimary } from './nav-primary';
 const items = {
   navPrimary: [
     { title: 'Dashboard', url: '/', icon: Home },
-    { title: 'Ontology Builder', url: '/ontology', icon: Building },
+    { title: 'Ontology Builder', url: '/ontology', icon: History },
   ],
   navGrouped: [
     {
@@ -36,6 +36,7 @@ const items = {
   ],
   navSecondary: [
     { title: 'Inbox', url: '/inbox', icon: Inbox },
+    { title: 'Businesses', url: '/business', icon: Building },
     { title: 'Settings', url: '/settings', icon: Settings },
   ],
 };

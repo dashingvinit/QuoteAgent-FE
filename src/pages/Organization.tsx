@@ -51,11 +51,12 @@ const OrganizationEditPage = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['organization'],
+    queryKey: ['organization', activeOrg?._id],
     queryFn: async () => {
-      const { data } = await Axios.get('/organizations/' + activeOrg?._id);
+      const { data } = await Axios.get('/organizations/' + activeOrg._id);
       return data.data;
     },
+    enabled: !!activeOrg?._id,
   });
 
   // Update organization mutation

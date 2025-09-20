@@ -62,7 +62,6 @@ export const DataGridWrapper = ({
       })
     );
   }, [schema]);
-
   const [columns, setColumns] = useState<GridColumn[]>(transformedColumns);
 
   const getCellContent = useCallback(

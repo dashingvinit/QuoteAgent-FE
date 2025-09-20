@@ -12,6 +12,8 @@ import UpdateVectors from './UpdateVectors';
 import OrganizationEditPage from './Organization';
 import Test from './Test/index';
 
+import Businesses from './Businesses';
+
 import NotFound from './NotFound';
 
 function pages() {
@@ -29,6 +31,7 @@ function pages() {
 
       <Route path="/quotes/generate" element={<Test />} />
 
+      <Route path="/businesses" element={<Businesses />} />
       <Route path="/Settings" element={<OrganizationEditPage />} />
 
       <Route index path="/*" element={<NotFound />} />

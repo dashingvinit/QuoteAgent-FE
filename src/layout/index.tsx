@@ -10,7 +10,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <SidebarProvider defaultOpen={true}>
           <div className="grid grid-cols-[auto,1fr] w-full">
             <AppSidebar />
-            <main className="flex flex-col h-screen">
+            <main className="flex flex-col h-screen overflow-hidden">
               <header className="sticky top-0 z-10">
                 <Topbar />
               </header>

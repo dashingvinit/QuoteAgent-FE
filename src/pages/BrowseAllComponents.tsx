@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Axios } from '@/services';
 import { useOrg } from '@/context/org-provider';
+import { GridColumn, GridCellKind } from '@glideapps/glide-data-grid';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,10 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Filter, Plus } from 'lucide-react';
+import { DataGridWrapper2 } from '@/features/Datagrid/DataGridWrapper2';
 
 interface Component {
   _id: string;
@@ -40,8 +41,6 @@ function BrowseAllComponents() {
   const { activeOrg } = useOrg();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingData, setEditingData] = useState<Component | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilters, setCategoryFilters] = useState<string[]>([]);
@@ -53,8 +52,6 @@ function BrowseAllComponents() {
   };
 
   const updateComponent = async ({ id, updatedComponent }: { id: string; updatedComponent: Component }) => {
-    // Dummy function - you will replace this with actual API call
-    console.log('Updating component:', id, updatedComponent);
     const { data } = await Axios.put(`/components/${id}`, updatedComponent);
     return data;
   };
@@ -73,38 +70,55 @@ function BrowseAllComponents() {
     mutationFn: updateComponent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['components', activeOrg?._id] });
-      setEditingId(null);
-      setEditingData(null);
     },
     onError: (error) => {
       console.error('Update failed:', error);
     },
   });
 
-  const handleEdit = (component: Component) => {
-    setEditingId(component._id);
-    setEditingData({ ...component });
-  };
+  const handleCellEdit = (rowIndex: number, columnIndex: number, newValue: any) => {
+    const component = filteredComponents[rowIndex];
+    if (!component) return;
 
-  const handleSave = () => {
-    if (editingData) {
-      updateMutation.mutate({ id: editingData._id, updatedComponent: editingData });
-    }
-  };
+    const columnFields = [
+      'Name',
+      'componentTypeName',
+      'Price',
+      'Minimum Area',
+      'Max Width Per Unit',
+      'Max Height Per Unit',
+      'Product Category',
+      'Sub Category',
+      'Phrase Tags',
+    ];
+    const field = columnFields[columnIndex];
 
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditingData(null);
-  };
+    if (field) {
+      let processedValue = newValue.data;
 
-  const handleAttributeChange = (key: string, value: string | number) => {
-    if (editingData) {
-      setEditingData({
-        ...editingData,
+      // Convert to appropriate type based on field
+      if (
+        field === 'Price' ||
+        field === 'Minimum Area' ||
+        field === 'Max Width Per Unit' ||
+        field === 'Max Height Per Unit'
+      ) {
+        processedValue = parseFloat(processedValue) || 0;
+      }
+
+      // Create updated component with the new value
+      const updatedComponent = {
+        ...component,
+        ...(field === 'componentTypeName' ? { componentTypeName: processedValue } : {}),
         attributes: {
-          ...editingData.attributes,
-          [key]: value,
+          ...component.attributes,
+          ...(field !== 'componentTypeName' ? { [field]: processedValue } : {}),
         },
+      };
+
+      updateMutation.mutate({
+        id: component._id,
+        updatedComponent,
       });
     }
   };
@@ -113,22 +127,121 @@ function BrowseAllComponents() {
     navigate('/components/upload');
   };
 
+  // Define columns for the data grid
+  const columns: GridColumn[] = useMemo(
+    () => [
+      {
+        title: 'Name',
+        id: 'name',
+        width: 400,
+      },
+      {
+        title: 'Type',
+        id: 'type',
+        width: 100,
+      },
+      {
+        title: 'Price',
+        id: 'price',
+        width: 100,
+      },
+      {
+        title: 'Min Area',
+        id: 'minArea',
+        width: 100,
+      },
+      {
+        title: 'Max Width',
+        id: 'maxWidth',
+        width: 100,
+      },
+      {
+        title: 'Max Height',
+        id: 'maxHeight',
+        width: 100,
+      },
+      {
+        title: 'Category',
+        id: 'category',
+        width: 100,
+      },
+      {
+        title: 'Sub Category',
+        id: 'subCategory',
+        width: 100,
+      },
+      {
+        title: 'Tags',
+        id: 'tags',
+        width: 300,
+      },
+    ],
+    []
+  );
+
   // Filter and search logic
-  const filteredComponents =
-    components?.filter((component) => {
-      const matchesSearch =
-        component.attributes.Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        component.componentTypeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        component.attributes['Product Category'].toLowerCase().includes(searchQuery.toLowerCase()) ||
-        component.attributes['Phrase Tags'].toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredComponents = useMemo(
+    () =>
+      components?.filter((component) => {
+        const matchesSearch =
+          component.attributes.Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          component.componentTypeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          component.attributes['Product Category'].toLowerCase().includes(searchQuery.toLowerCase()) ||
+          component.attributes['Phrase Tags'].toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesCategory =
-        categoryFilters.length === 0 ||
-        categoryFilters.includes(component.attributes['Product Category']) ||
-        categoryFilters.includes(component.attributes['Sub Category']);
+        const matchesCategory =
+          categoryFilters.length === 0 ||
+          categoryFilters.includes(component.attributes['Product Category']) ||
+          categoryFilters.includes(component.attributes['Sub Category']);
 
-      return matchesSearch && matchesCategory;
-    }) || [];
+        return matchesSearch && matchesCategory;
+      }) || [],
+    [components, searchQuery, categoryFilters]
+  );
+
+  // Transform data for the data grid
+  const gridData = useMemo(() => {
+    if (!filteredComponents) return [];
+
+    return filteredComponents.map((component) => [
+      {
+        kind: GridCellKind.Text,
+        data: component.attributes.Name || '',
+      },
+      {
+        kind: GridCellKind.Text,
+        data: component.componentTypeName || '',
+      },
+      {
+        kind: GridCellKind.Number,
+        data: component.attributes.Price || 0,
+      },
+      {
+        kind: GridCellKind.Number,
+        data: component.attributes['Minimum Area'] || 0,
+      },
+      {
+        kind: GridCellKind.Number,
+        data: component.attributes['Max Width Per Unit'] || 0,
+      },
+      {
+        kind: GridCellKind.Number,
+        data: component.attributes['Max Height Per Unit'] || 0,
+      },
+      {
+        kind: GridCellKind.Text,
+        data: component.attributes['Product Category'] || '',
+      },
+      {
+        kind: GridCellKind.Text,
+        data: component.attributes['Sub Category'] || '',
+      },
+      {
+        kind: GridCellKind.Text,
+        data: component.attributes['Phrase Tags'] || '',
+      },
+    ]);
+  }, [filteredComponents]);
 
   // Get unique categories for filter options
   const uniqueCategories = [
@@ -268,179 +381,23 @@ function BrowseAllComponents() {
         </div>
       </div>
 
-      {/* Scrollable Table Area */}
+      {/* DataGrid Area */}
       <div className="flex-1 p-6 pt-4 overflow-hidden">
         <Card className="h-full flex flex-col overflow-hidden">
-          {/* Table Header - Fixed */}
-          <div className="flex-shrink-0 border-b">
-            <div className="min-w-[1200px] bg-muted/50">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[140px]">Name</TableHead>
-                    <TableHead className="w-[120px]">Type</TableHead>
-                    <TableHead className="w-[100px]">Price</TableHead>
-                    <TableHead className="w-[100px]">Min Area</TableHead>
-                    <TableHead className="w-[110px]">Max Width</TableHead>
-                    <TableHead className="w-[110px]">Max Height</TableHead>
-                    <TableHead className="w-[130px]">Category</TableHead>
-                    <TableHead className="w-[130px]">Sub Category</TableHead>
-                    <TableHead className="w-[160px]">Tags</TableHead>
-                    <TableHead className="w-[140px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-              </Table>
-            </div>
-          </div>
-
-          {/* Scrollable Table Body */}
-          <ScrollArea className="flex-1">
-            <div className="min-w-[1200px]">
-              <Table>
-                <TableBody>
-                  {filteredComponents?.map((component) => (
-                    <TableRow key={component._id} className="hover:bg-muted/30">
-                      <TableCell className="font-medium w-[140px]">
-                        {editingId === component._id ? (
-                          <Input
-                            type="text"
-                            value={editingData?.attributes.Name || ''}
-                            onChange={(e) => handleAttributeChange('Name', e.target.value)}
-                            className="h-8 text-sm"
-                          />
-                        ) : (
-                          component.attributes.Name
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground w-[120px]">
-                        {component.componentTypeName}
-                      </TableCell>
-                      <TableCell className="w-[100px]">
-                        {editingId === component._id ? (
-                          <Input
-                            type="number"
-                            value={editingData?.attributes.Price || 0}
-                            onChange={(e) => handleAttributeChange('Price', parseFloat(e.target.value))}
-                            step="0.01"
-                            className="h-8 text-sm"
-                          />
-                        ) : (
-                          <span className="font-medium">${component.attributes.Price}</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="w-[100px]">
-                        {editingId === component._id ? (
-                          <Input
-                            type="number"
-                            value={editingData?.attributes['Minimum Area'] || 0}
-                            onChange={(e) => handleAttributeChange('Minimum Area', parseFloat(e.target.value))}
-                            step="0.1"
-                            className="h-8 text-sm"
-                          />
-                        ) : (
-                          component.attributes['Minimum Area']
-                        )}
-                      </TableCell>
-                      <TableCell className="w-[110px]">
-                        {editingId === component._id ? (
-                          <Input
-                            type="number"
-                            value={editingData?.attributes['Max Width Per Unit'] || 0}
-                            onChange={(e) => handleAttributeChange('Max Width Per Unit', parseFloat(e.target.value))}
-                            className="h-8 text-sm"
-                          />
-                        ) : (
-                          component.attributes['Max Width Per Unit']
-                        )}
-                      </TableCell>
-                      <TableCell className="w-[110px]">
-                        {editingId === component._id ? (
-                          <Input
-                            type="number"
-                            value={editingData?.attributes['Max Height Per Unit'] || 0}
-                            onChange={(e) => handleAttributeChange('Max Height Per Unit', parseFloat(e.target.value))}
-                            className="h-8 text-sm"
-                          />
-                        ) : (
-                          component.attributes['Max Height Per Unit']
-                        )}
-                      </TableCell>
-                      <TableCell className="w-[130px]">
-                        {editingId === component._id ? (
-                          <Input
-                            type="text"
-                            value={editingData?.attributes['Product Category'] || ''}
-                            onChange={(e) => handleAttributeChange('Product Category', e.target.value)}
-                            className="h-8 text-sm"
-                          />
-                        ) : (
-                          <Badge variant="secondary" className="text-xs">
-                            {component.attributes['Product Category']}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="w-[130px]">
-                        {editingId === component._id ? (
-                          <Input
-                            type="text"
-                            value={editingData?.attributes['Sub Category'] || ''}
-                            onChange={(e) => handleAttributeChange('Sub Category', e.target.value)}
-                            className="h-8 text-sm"
-                          />
-                        ) : (
-                          <Badge variant="outline" className="text-xs">
-                            {component.attributes['Sub Category']}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="w-[160px]">
-                        {editingId === component._id ? (
-                          <Input
-                            type="text"
-                            value={editingData?.attributes['Phrase Tags'] || ''}
-                            onChange={(e) => handleAttributeChange('Phrase Tags', e.target.value)}
-                            className="h-8 text-sm"
-                          />
-                        ) : (
-                          <div className="flex flex-wrap gap-1">
-                            {component.attributes['Phrase Tags'].split(',').map((tag, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
-                                {tag.trim()}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="w-[140px]">
-                        {editingId === component._id ? (
-                          <div className="flex gap-1">
-                            <Button
-                              onClick={handleSave}
-                              disabled={updateMutation.isPending}
-                              size="sm"
-                              className="h-8 px-3 text-xs">
-                              {updateMutation.isPending ? 'Saving...' : 'Save'}
-                            </Button>
-                            <Button onClick={handleCancel} variant="outline" size="sm" className="h-8 px-3 text-xs">
-                              Cancel
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            onClick={() => handleEdit(component)}
-                            size="sm"
-                            variant="outline"
-                            className="h-8 px-3 text-xs">
-                            Edit
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </ScrollArea>
+          <DataGridWrapper2
+            headers={columns}
+            data={gridData}
+            onCellEdit={handleCellEdit}
+            className="rounded-lg border-2 w-full overflow-hidden bg-background shadow-xl"
+            height="100%"
+            rowHeight={45}
+            maxColumnAutoWidth={300}
+            fillHandle={true}
+            search={true}
+            smoothScrollY={true}
+            fixedShadowX={true}
+            fixedShadowY={true}
+          />
         </Card>
 
         {/* Empty States */}

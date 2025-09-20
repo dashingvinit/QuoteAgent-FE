@@ -36,7 +36,7 @@ const items = {
   ],
   navSecondary: [
     { title: 'Inbox', url: '/inbox', icon: Inbox },
-    { title: 'Businesses', url: '/business', icon: Building },
+    { title: 'Businesses', url: '/businesses', icon: Building },
     { title: 'Settings', url: '/settings', icon: Settings },
   ],
 };

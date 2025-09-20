@@ -75,7 +75,13 @@ const OrganizationEditPage = () => {
   useEffect(() => {
     if (organization) {
       setFormData({
-        ...organization,
+        name: organization.name || '',
+        website: organization.website || '',
+        email: organization.email || '',
+        support_email: organization.support_email || '',
+        about: organization.about || '',
+        logo: organization.logo || '',
+        terms: organization.terms || '',
         address: {
           street: organization.address?.street || '',
           city: organization.address?.city || '',
@@ -85,6 +91,7 @@ const OrganizationEditPage = () => {
           currency: organization.address?.currency || 'USD',
         },
         zoneinfo: organization.zoneinfo || [],
+        VAT: organization.VAT || 20,
       });
     }
   }, [organization]);
@@ -219,7 +226,13 @@ const OrganizationEditPage = () => {
   const handleCancel = () => {
     if (organization) {
       setFormData({
-        ...organization,
+        name: organization.name || '',
+        website: organization.website || '',
+        email: organization.email || '',
+        support_email: organization.support_email || '',
+        about: organization.about || '',
+        logo: organization.logo || '',
+        terms: organization.terms || '',
         address: {
           street: organization.address?.street || '',
           city: organization.address?.city || '',
@@ -229,6 +242,7 @@ const OrganizationEditPage = () => {
           currency: organization.address?.currency || 'USD',
         },
         zoneinfo: organization.zoneinfo || [],
+        VAT: organization.VAT || 20,
       });
     }
     setIsEditing(false);
@@ -286,8 +300,12 @@ const OrganizationEditPage = () => {
   return (
     <div className="h-[calc(100vh-3rem)] flex bg-muted/20">
       {/* Fixed Sidebar */}
-      <div className="w-64 bg-muted/50 backdrop-blur-sm border-r border-border p-4 flex-shrink-0 shadow-sm">
+      <div className="w-72 bg-muted/20 backdrop-blur-sm border-r border-border p-4 flex-shrink-0 shadow-sm">
         <div className="sticky top-4 space-y-6">
+          <div className="mb-8 bg-background/80 backdrop-blur-sm rounded-lg p-6 border shadow-sm">
+            <h1 className="text-3xl font-bold text-foreground">Organization Settings</h1>
+            <p className="text-muted-foreground mt-2">Manage your organization's profile and configuration</p>
+          </div>
           <div>
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-4">Navigation</h3>
             <nav className="space-y-2">
@@ -338,11 +356,6 @@ const OrganizationEditPage = () => {
       {/* Main Content */}
       <ScrollArea className="flex-1">
         <div className="container mx-auto p-6">
-          <div className="mb-8 bg-background/80 backdrop-blur-sm rounded-lg p-6 border shadow-sm">
-            <h1 className="text-3xl font-bold text-foreground">Organization Settings</h1>
-            <p className="text-muted-foreground mt-2">Manage your organization's profile and configuration</p>
-          </div>
-
           <div className="space-y-6">
             {/* Basic Information */}
             <Card
@@ -586,7 +599,7 @@ const OrganizationEditPage = () => {
                               Zone Name <span className="text-destructive">*</span>
                             </Label>
                             <Input
-                              value={zone.zoneName}
+                              value={zone.zoneName || ''}
                               onChange={(e) => handleZoneChange(index, 'zoneName', e.target.value)}
                               disabled={!isEditing}
                               placeholder="Downtown Zone"
@@ -598,7 +611,7 @@ const OrganizationEditPage = () => {
                               Zone Code <span className="text-destructive">*</span>
                             </Label>
                             <Input
-                              value={zone.zoneCode}
+                              value={zone.zoneCode || ''}
                               onChange={(e) => handleZoneChange(index, 'zoneCode', e.target.value)}
                               disabled={!isEditing}
                               placeholder="DT001"
@@ -609,7 +622,7 @@ const OrganizationEditPage = () => {
                             <Label>Delivery Fee ($)</Label>
                             <Input
                               type="number"
-                              value={zone.deliveryFee}
+                              value={zone.deliveryFee || 0}
                               onChange={(e) => handleZoneChange(index, 'deliveryFee', e.target.value)}
                               disabled={!isEditing}
                               min="0"
@@ -622,7 +635,7 @@ const OrganizationEditPage = () => {
                         <div className="flex items-center space-x-2">
                           <Switch
                             id={`active-${index}`}
-                            checked={zone.isActive}
+                            checked={zone.isActive || false}
                             onCheckedChange={(checked) => handleZoneChange(index, 'isActive', checked)}
                             disabled={!isEditing}
                           />
@@ -632,7 +645,7 @@ const OrganizationEditPage = () => {
                         <div className="space-y-2">
                           <Label>Description</Label>
                           <Textarea
-                            value={zone.description}
+                            value={zone.description || ''}
                             onChange={(e) => handleZoneChange(index, 'description', e.target.value)}
                             disabled={!isEditing}
                             rows={2}
@@ -676,7 +689,7 @@ const OrganizationEditPage = () => {
                               <Label>Radius (km)</Label>
                               <Input
                                 type="number"
-                                value={zone.coverage?.radius || ''}
+                                value={zone.coverage?.radius || 0}
                                 onChange={(e) => handleZoneChange(index, 'coverage.radius', e.target.value)}
                                 disabled={!isEditing}
                                 min="0"
@@ -688,7 +701,7 @@ const OrganizationEditPage = () => {
                               <Label>Center Latitude</Label>
                               <Input
                                 type="number"
-                                value={zone.coverage?.centerCoordinates?.latitude || ''}
+                                value={zone.coverage?.centerCoordinates?.latitude || 0}
                                 onChange={(e) =>
                                   handleZoneChange(index, 'coverage.centerCoordinates.latitude', e.target.value)
                                 }
@@ -701,7 +714,7 @@ const OrganizationEditPage = () => {
                               <Label>Center Longitude</Label>
                               <Input
                                 type="number"
-                                value={zone.coverage?.centerCoordinates?.longitude || ''}
+                                value={zone.coverage?.centerCoordinates?.longitude || 0}
                                 onChange={(e) =>
                                   handleZoneChange(index, 'coverage.centerCoordinates.longitude', e.target.value)
                                 }

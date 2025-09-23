@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, memo } from 'react';
 import { useTheme } from '@/context/theme-provider';
 import { DataEditor, GridColumn, Item, GridCell, EditableGridCell, GridCellKind } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
+import './DataGridWrapper2.css';
 import { allCells } from './cells';
 import { darkTheme, lightTheme } from './cells/theme';
 
@@ -35,9 +36,9 @@ export const DataGridWrapper2 = ({
   headers,
   data,
   onCellEdit,
-  className = 'rounded-lg border-2 w-full overflow-hidden bg-muted shadow-xl',
+  className = 'rounded-lg border-2 overflow-hidden bg-muted shadow-xl',
   height = '100%',
-  width = '100%',
+  width = 'fit-content',
   maxColumnAutoWidth = 500,
   maxColumnWidth = 2000,
   rowMarkers = 'both',
@@ -112,10 +113,10 @@ export const DataGridWrapper2 = ({
 
   return (
     <div
-      className={className}
+      className={`${className} datagrid-custom-scrollbar`}
       style={{
         height: dynamicHeight,
-        width,
+        overflow: 'hidden',
         ...(autoHeight && { minHeight: 'fit-content' }),
       }}>
       <DataEditor
@@ -130,6 +131,7 @@ export const DataGridWrapper2 = ({
         maxColumnWidth={maxColumnWidth}
         rowHeight={rowHeight}
         height={autoHeight ? dynamicHeight : undefined}
+        width={'100%'}
         scaleToRem={true}
         fixedShadowX={fixedShadowX}
         fixedShadowY={fixedShadowY}

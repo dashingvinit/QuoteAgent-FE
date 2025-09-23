@@ -383,22 +383,20 @@ function BrowseAllComponents() {
 
       {/* DataGrid Area */}
       <div className="flex-1 p-6 pt-4 overflow-hidden">
-        <Card className="h-full flex flex-col overflow-hidden">
-          <DataGridWrapper2
-            headers={columns}
-            data={gridData}
-            onCellEdit={handleCellEdit}
-            className="rounded-lg border-2 w-full overflow-hidden bg-background shadow-xl"
-            height="100%"
-            rowHeight={45}
-            maxColumnAutoWidth={300}
-            fillHandle={true}
-            search={true}
-            smoothScrollY={true}
-            fixedShadowX={true}
-            fixedShadowY={true}
-          />
-        </Card>
+        <DataGridWrapper2
+          headers={columns}
+          data={gridData}
+          onCellEdit={handleCellEdit}
+          width="fit-content"
+          height="100%"
+          rowHeight={45}
+          maxColumnAutoWidth={300}
+          fillHandle={true}
+          search={true}
+          smoothScrollY={true}
+          fixedShadowX={true}
+          fixedShadowY={true}
+        />
 
         {/* Empty States */}
         {(!filteredComponents || filteredComponents.length === 0) && components && components.length > 0 && (

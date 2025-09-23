@@ -72,8 +72,13 @@ function Businesses() {
   return (
     <div className="p-6 h-full">
       <h1 className="text-2xl font-bold mb-4">Businesses</h1>
-      <div className="h-[calc(100%-80px)]">
-        <DataGridWrapper2 headers={headers} data={transformedData} onCellEdit={handleCellEdit} autoHeight />
+      <div className="h-[calc(100%-80px)] overflow-autoawdawd">
+        <div className="min-w-fit">
+          <DataGridWrapper2 headers={headers} data={transformedData} onCellEdit={handleCellEdit} autoHeight />
+        </div>
+        <div>
+          <h2>Hello world</h2>
+        </div>
       </div>
     </div>
   );
